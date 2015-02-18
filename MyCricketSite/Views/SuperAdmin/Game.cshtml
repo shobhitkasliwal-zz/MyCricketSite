@@ -1,0 +1,89 @@
+﻿@model MyCricketSiteData.Entities.Game
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>Game</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.GameDate, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.GameDate, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.GameDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.TournamentID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.TournamentID, (SelectList)ViewBag.Tournaments, "--Select Tournament--")
+                @Html.ValidationMessageFor(model => model.TournamentID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Teams", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-4">
+
+                <select id="ddlCreateGameTeam1"></select>
+            </div>
+            <div class="col-md-2">Vs</div>
+            <div class="col-md-4">
+                <select id="ddlCreateGameTeam2"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Umpiring", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-4">
+
+                <select id="ddlCreateGameUmpiringTeam1"></select>
+            </div>
+            <div class="col-md-2">Vs</div>
+            <div class="col-md-4">
+                <select id="ddlCreateGameUmpiringTeam2"></select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.GroundAddress, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.GroundAddress, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.GroundAddress, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+
+@section Scripts
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#TournamentID").change(function (e) {
+                e.preventDefault();
+                var data = [];
+                $.getJSON("/Home/GetTeamsForTournament", { "tournamentID": $(this).val() }, function (data) {
+                    data = $.map(JSON.parse(data.Teams), function (item, a) {
+                        return "<option value=" + item.Id + ">" + item.TeamName + "</option>";
+                    });
+                   
+                   
+                    $("#ddlCreateGameTeam1").html(data.join(""));
+                });
+            });
+        });
+    </script>
+}
