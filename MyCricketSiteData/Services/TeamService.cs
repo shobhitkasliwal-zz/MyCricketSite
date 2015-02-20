@@ -14,10 +14,10 @@ namespace MyCricketSiteData.Services
     {
         //public IEnumerable<Team> getTeamsForTournament(string tournamentID)
         //{
-        //    //var tCursor = this.DBConnectionHandler.DBCollection.FindAllAs<Team>()
-        //    //        .SetSortOrder(SortBy<Team>.Descending(g => g.TeamName))
-        //    //        .Where(g => g.TournamentIds.Contains(tournamentID));
-        //    //return tCursor;
+        //    var tCursor = this.DBConnectionHandler.DBCollection.FindAllAs<Team>()
+        //            .SetSortOrder(SortBy<Team>.Descending(g => g.TeamName))
+        //            .Where(g => g.TournamentIds.Contains(tournamentID));
+        //    return tCursor;
         //}
 
         public override void Update(Team entity)

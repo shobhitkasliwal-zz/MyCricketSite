@@ -13,7 +13,7 @@ namespace MyCricketSiteData.Entities
 
         }
 
-       
+
         [BsonDateTimeOptions(DateOnly = true)]
         public DateTime StartDate { get; set; }
 
@@ -21,5 +21,7 @@ namespace MyCricketSiteData.Entities
         public string Name { get; set; }
 
         public string Status { get; set; }
+
+        Dictionary<string, Dictionary<string, List<string>>> Groups { get; set; }
     }
 }

@@ -23,8 +23,10 @@ namespace MyCricketSiteData.Entities
         public string Phone { get; set; }
         public string HomeGround { get; set; }
 
+        public string RefId { get; set; }
+
     }
 
-    
+
 
 }

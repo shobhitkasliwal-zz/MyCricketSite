@@ -7,3 +7,12 @@ E:\Office Projects\MyProjects\MyCricketSite\MyCricketSiteData\bin\Debug\MongoDB.
 E:\Office Projects\MyProjects\MyCricketSite\MyCricketSiteData\bin\Debug\MongoDB.Driver.xml
 E:\Office Projects\MyProjects\MyCricketSite\MyCricketSiteData\obj\Debug\MyCricketSiteData.dll
 E:\Office Projects\MyProjects\MyCricketSite\MyCricketSiteData\obj\Debug\MyCricketSiteData.pdb
+C:\Projects\GitHub Projects\MyCricketSite\MyCricketSiteData\bin\Debug\MyCricketSiteData.dll.config
+C:\Projects\GitHub Projects\MyCricketSite\MyCricketSiteData\bin\Debug\MyCricketSiteData.dll
+C:\Projects\GitHub Projects\MyCricketSite\MyCricketSiteData\bin\Debug\MyCricketSiteData.pdb
+C:\Projects\GitHub Projects\MyCricketSite\MyCricketSiteData\bin\Debug\MongoDB.Bson.dll
+C:\Projects\GitHub Projects\MyCricketSite\MyCricketSiteData\bin\Debug\MongoDB.Driver.dll
+C:\Projects\GitHub Projects\MyCricketSite\MyCricketSiteData\bin\Debug\MongoDB.Bson.xml
+C:\Projects\GitHub Projects\MyCricketSite\MyCricketSiteData\bin\Debug\MongoDB.Driver.xml
+C:\Projects\GitHub Projects\MyCricketSite\MyCricketSiteData\obj\Debug\MyCricketSiteData.dll
+C:\Projects\GitHub Projects\MyCricketSite\MyCricketSiteData\obj\Debug\MyCricketSiteData.pdb
