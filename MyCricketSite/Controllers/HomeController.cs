@@ -73,83 +73,65 @@ namespace MyCricketSite.Controllers
 
             StreamReader sreader = new StreamReader(streamResponse);//reads the data stream
             string data = sreader.ReadToEnd();//reads it to the end
-
-
-            return Json(new { CrawlData = data }, JsonRequestBehavior.AllowGet);
-
-        }
-
-        [HttpPost]
-        [ValidateInput(false)]
-        public ActionResult CrawlTeams(string teams)
-        {
-            object[] obj = (object[])(new JavaScriptSerializer()).DeserializeObject(teams);
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(data);
             TeamService tserv = new TeamService();
+            HtmlNode mainNode = doc.DocumentNode.SelectSingleNode("//table[@id='ctl00_main_rdgTeams_ctl00']/tbody");
+
+            // HtmlNode node = mainNode.SelectSingleNode("//tr");
             Dictionary<string, string> groups = new Dictionary<string, string>();
-            for (int i = 0; i < obj.Length; i++)
+            foreach (HtmlNode trnode in mainNode.SelectNodes(".//tr"))
             {
-                object[] tm = (object[])obj[i];
+                HtmlNodeCollection node = trnode.SelectNodes(".//td");
+                if (node.Count < 5) continue;
+                HtmlDocument innerDoc = new HtmlDocument();
+                innerDoc.LoadHtml(node[1].InnerHtml);
+                HtmlNode link = innerDoc.DocumentNode.SelectNodes("//a[@href]")[0];
                 Team team = new Team();
-
-                if (tm.Length >= 5)
+                team.TeamName = link.InnerText;
+                string hrf = link.Attributes["href"].Value;
+                string qr = hrf.Split('?').Length > 0 ? hrf.Split('?')[1] : "";
+                qr = qr.Substring(qr.IndexOf("=") + 1, qr.IndexOf("&", qr.IndexOf("=")) - (qr.IndexOf("=") + 1));
+                team.RefId = qr;
+                team.ContactName = node[2].InnerHtml.ToString();
+                team.Email = node[3].InnerHtml.ToString();
+                team.Phone = node[4].InnerHtml.ToString();
+                team.HomeGround = node[5].InnerHtml.ToString();
+                tserv.Create(team);
+                if (groups.ContainsKey(node[0].ToString()))
                 {
-                    HtmlDocument doc = new HtmlDocument();
-                    doc.LoadHtml(tm[1].ToString());
-                    HtmlNode link = doc.DocumentNode.SelectNodes("//a[@href]")[0];
-
-                    //   HtmlAttribute att = link["href"];
-                    // att.Value = FixLink(att);
-                    team.TeamName = link.InnerText;
-                    string hrf = link.Attributes["href"].Value;
-                    string qr = hrf.Split('?').Length > 0 ? hrf.Split('?')[1] : "";
-                    qr = qr.Substring(qr.IndexOf("=") + 1, qr.IndexOf("&", qr.IndexOf("=")) - (qr.IndexOf("=") + 1));
-                    team.RefId = qr;
-
-
-                    team.ContactName = tm[2].ToString();
-                    team.Email = tm[3].ToString();
-                    team.Phone = tm[4].ToString();
-                    team.HomeGround = tm[5].ToString();
-                    tserv.Create(team);
-                    //tserv.
-                    if (groups.ContainsKey(tm[0].ToString()))
-                    {
-                        groups[tm[0].ToString()] = groups[tm[0].ToString()] + "," + team.Id.ToString();
-                    }
-                    else
-                        groups.Add(tm[0].ToString(), team.Id.ToString());
-
+                    groups[node[0].ToString()] = groups[node[0].ToString()] + "," + team.Id.ToString();
                 }
+                else
+                    groups.Add(node[0].ToString(), team.Id.ToString());
             }
+
             Dictionary<string, Dictionary<string, List<string>>> TournamentGroups = new Dictionary<string, Dictionary<string, List<string>>>();
-            CookieContainer cookies = new CookieContainer();
-            HttpWebRequest myWebRequest = (HttpWebRequest)WebRequest.Create("http://chicagotwenty20.com/Default.aspx?season=7");
-            myWebRequest.CookieContainer = cookies;
-            HttpWebResponse response = (HttpWebResponse)myWebRequest.GetResponse();
-            WebResponse myWebResponse;
+
+
             foreach (KeyValuePair<string, string> grp in groups)
             {
                 Dictionary<string, List<string>> gpteams = new Dictionary<string, List<string>>();
                 foreach (string teamid in grp.Value.Split(','))
                 {
-                    gpteams.Add(teamid, new List<string>() { "Player1" });
+                    //gpteams.Add(teamid, new List<string>() { "Player1" });
                     TeamService ts = new TeamService();
                     Team tm = ts.GetById(teamid);
 
-                    String URL = "http://chicagotwenty20.com/Team.aspx?team=" + tm.RefId + "&teamName=" + Url.Encode(tm.TeamName).Replace("+", "%20");
+                    String URL1 = "http://chicagotwenty20.com/Team.aspx?team=" + tm.RefId + "&teamName=" + Url.Encode(tm.TeamName).Replace("+", "%20");
 
-                    HttpWebRequest myWebRequest1 = (HttpWebRequest)WebRequest.Create(URL);
+                    myWebRequest1 = (HttpWebRequest)WebRequest.Create(URL1);
                     myWebRequest1.CookieContainer = cookies;
                     myWebResponse = myWebRequest1.GetResponse();//Returns a response from an Internet resource
 
 
-                    Stream streamResponse = myWebResponse.GetResponseStream();//return the data stream from the internet
+                    streamResponse = myWebResponse.GetResponseStream();//return the data stream from the internet
                     //and save it in the stream
 
-                    StreamReader sreader = new StreamReader(streamResponse);//reads the data stream
-                    string data = sreader.ReadToEnd();//reads it to the end
+                    sreader = new StreamReader(streamResponse);//reads the data stream
+                    string data1 = sreader.ReadToEnd();//reads it to the end
                     HtmlDocument doc1 = new HtmlDocument();
-                    doc1.LoadHtml(data);
+                    doc1.LoadHtml(data1);
                     string div = doc1.DocumentNode.SelectSingleNode("//div[@id='ctl00_main_PlayersGrid']").InnerHtml;
                     doc1.LoadHtml(div);
                     string trs = doc1.DocumentNode.SelectSingleNode("//tbody").InnerText;
@@ -159,7 +141,13 @@ namespace MyCricketSite.Controllers
                 TournamentGroups.Add(grp.Key, gpteams);
 
             }
-            return Json(new { });
+
+
+            return new EmptyResult();
+
         }
+
+
+
     }
 }
