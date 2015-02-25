@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MyCricketSite.App_Start;
 using MyCricketSite.Properties;
@@ -98,12 +99,12 @@ namespace MyCricketSite.Controllers
                 team.Phone = node[4].InnerHtml.ToString();
                 team.HomeGround = node[5].InnerHtml.ToString();
                 tserv.Create(team);
-                if (groups.ContainsKey(node[0].ToString()))
+                if (groups.ContainsKey(node[0].InnerText.Trim()))
                 {
-                    groups[node[0].ToString()] = groups[node[0].ToString()] + "," + team.Id.ToString();
+                    groups[node[0].ToString()] = groups[node[0].InnerText.Trim()] + "," + team.Id.ToString();
                 }
                 else
-                    groups.Add(node[0].ToString(), team.Id.ToString());
+                    groups.Add(node[0].InnerText.Trim(), team.Id.ToString());
             }
 
             Dictionary<string, Dictionary<string, List<string>>> TournamentGroups = new Dictionary<string, Dictionary<string, List<string>>>();
@@ -114,7 +115,8 @@ namespace MyCricketSite.Controllers
                 Dictionary<string, List<string>> gpteams = new Dictionary<string, List<string>>();
                 foreach (string teamid in grp.Value.Split(','))
                 {
-                    //gpteams.Add(teamid, new List<string>() { "Player1" });
+
+                    List<string> PlayerList = new List<string>();
                     TeamService ts = new TeamService();
                     Team tm = ts.GetById(teamid);
 
@@ -134,14 +136,64 @@ namespace MyCricketSite.Controllers
                     doc1.LoadHtml(data1);
                     string div = doc1.DocumentNode.SelectSingleNode("//div[@id='ctl00_main_PlayersGrid']").InnerHtml;
                     doc1.LoadHtml(div);
-                    string trs = doc1.DocumentNode.SelectSingleNode("//tbody").InnerText;
+                    string trs_Player = doc1.DocumentNode.SelectSingleNode("//tbody").InnerHtml;
                     /// Make call to get all players insert into the Players Document and then add the player Ids here; 
+                    HtmlDocument PlayerDoc = new HtmlDocument();
+                    PlayerDoc.LoadHtml(trs_Player);
+                    PlayerService playerService = new PlayerService();
+                    foreach (HtmlNode trnode in PlayerDoc.DocumentNode.SelectNodes(".//tr"))
+                    {
+                        HtmlNodeCollection node = trnode.SelectNodes(".//td");
+                        Player pl = new Player();
+                        pl.RefId = node[0].InnerText;
+                        HtmlDocument playerAnc = new HtmlDocument();
+                        playerAnc.LoadHtml(node[2].InnerHtml);
+                        HtmlNode player_link = playerAnc.DocumentNode.SelectNodes("//a[@href]")[0];
+                        string pl_hrf = player_link.Attributes["href"].Value;
+                        myWebRequest1 = (HttpWebRequest)WebRequest.Create("http://chicagotwenty20.com/" + pl_hrf);
+                        myWebRequest1.CookieContainer = cookies;
+                        myWebResponse = myWebRequest1.GetResponse();
+                        streamResponse = myWebResponse.GetResponseStream();//return the data stream from the internet
+                        //and save it in the stream
+
+                        sreader = new StreamReader(streamResponse);//reads the data stream
+                        string player_data = sreader.ReadToEnd();//reads it to the end
+                        HtmlDocument pl_detail = new HtmlDocument();
+                        pl_detail.LoadHtml(player_data);
+                        pl_detail.LoadHtml(pl_detail.DocumentNode.SelectSingleNode("//table[@id='Table1']").InnerHtml);
+                        pl_detail.LoadHtml(pl_detail.DocumentNode.SelectSingleNode("//div[@class='details']/table").InnerHtml);
+                        pl_detail.LoadHtml(pl_detail.DocumentNode.SelectSingleNode("//div[@class='data-container']/ul").InnerHtml);
+                        HtmlNodeCollection PlayerLInode = pl_detail.DocumentNode.SelectNodes(".//li");
+                        string name = PlayerLInode[0].InnerText.Replace("Name:", "").Trim();
+                        if (name.Contains("(C)")) pl.Role = "Captain";
+                        if (name.Contains("(VC)")) pl.Role = "ViceCaptain";
+                        name = name.Replace("(C)", "").Replace("(VC)", "").Trim();
+                        string[] splitName = name.Split(' ');
+                        pl.FirstName = splitName[0];
+                        pl.LastName = splitName.Length > 1 ? splitName[1] : "";
+                        pl.Email = PlayerLInode[1].InnerText.Replace("EmailAddress:", "").Trim();
+                        pl.Phone = PlayerLInode[2].InnerText.Replace("Phone:", "").Trim();
+                        pl.BattingStyle = PlayerLInode[3].InnerText.Replace("Batting Style:", "").Trim();
+                        pl.BowlingStyle = PlayerLInode[4].InnerText.Replace("Bowling Style:", "").Trim();
+                        pl.FieldingPosition = PlayerLInode[5].InnerText.Replace("Fielding Position:", "").Trim();
+                        pl.DateAdded = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+                        playerService.Create(pl);
+                        PlayerList.Add(pl.Id.ToString());
+                    }
+                    gpteams.Add(teamid, PlayerList);
+
                 }
 
                 TournamentGroups.Add(grp.Key, gpteams);
 
             }
-
+            TournamentService tournamentService = new TournamentService();
+            Tournament tournament = new Tournament();
+            tournament.StartDate = new DateTime(2014, 05, 17);
+            tournament.Status = "Closed";
+            tournament.Name = "2014 Chicago Twenty 20";
+            tournament.Groups = TournamentGroups;
+            tournamentService.Create(tournament);
 
             return new EmptyResult();
 

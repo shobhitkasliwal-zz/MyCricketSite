@@ -11,7 +11,7 @@ namespace MyCricketSiteData.Entities
         public Player()
         { }
 
-        
+
         [Required]
         public string FirstName { get; set; }
         [Required]
@@ -21,7 +21,16 @@ namespace MyCricketSiteData.Entities
         [Required]
         public string Phone { get; set; }
 
-        [BsonDateTimeOptions(DateOnly = true)]
-        public string DateAdded { get; set; }
+        public string BattingStyle { get; set; }
+
+        public string BowlingStyle { get; set; }
+
+        public string FieldingPosition { get; set; }
+
+        //[BsonDateTimeOptions(DateOnly = true)]
+        public DateTime DateAdded { get; set; }
+
+        public string Role { get; set; }
+        public string RefId { get; set; }
     }
 }
