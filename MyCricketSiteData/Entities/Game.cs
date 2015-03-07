@@ -11,17 +11,12 @@ namespace MyCricketSiteData.Entities
         public Game()
         { }
 
-        [BsonDateTimeOptions(DateOnly = true)]
-        [Required]
-        public DateTime GameDate { get; set; }
-
-        [Required]
         public string TournamentID { get; set; }
+        public DateTime GameDate { get; set; }
+        public string GroupName { get; set; }
+        public Dictionary<string, string> PlayingTeams { get; set; }
+        public Dictionary<string, string> UmpiringTeams { get; set; }
+        public string RefId { get; set; }
 
-        public string[] PlayingTeamIds { get; set; }
-
-        public string[] UmpiringTeamIds { get; set; }
-
-        public string GroundAddress { get; set; }
     }
 }

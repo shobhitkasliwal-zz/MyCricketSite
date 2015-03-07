@@ -19,6 +19,16 @@ namespace MyCricketSiteData.Services
         //            .Where(g => g.TournamentIds.Contains(tournamentID));
         //    return tCursor;
         //}
+        public Team GetTeamByName(string name, string tournamentid)
+        {
+
+            var entityQuery = Query<Team>.EQ(e => e.TeamName, name);
+
+            return this.DBConnectionHandler.DBCollection.FindOne(entityQuery);
+
+
+        }
+
 
         public override void Update(Team entity)
         {

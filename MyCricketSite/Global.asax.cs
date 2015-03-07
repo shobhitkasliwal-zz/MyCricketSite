@@ -20,5 +20,10 @@ namespace MyCricketSite
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             ModelBinders.Binders.Add(typeof(ObjectId), new BsonObjectIdBinder());
         }
+        protected void Begin_Request()
+        {
+            String str = "";
+        }
+
     }
 }

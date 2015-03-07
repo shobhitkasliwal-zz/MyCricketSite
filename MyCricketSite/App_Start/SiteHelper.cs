@@ -11,7 +11,7 @@ using System.Text;
 using System.Web;
 using System.Web.Mvc;
 
-namespace MyCricketSite.App_Start
+namespace MyCricketSite
 {
     public static class SiteHelper
     {
@@ -261,7 +261,7 @@ namespace MyCricketSite.App_Start
             EmailTo = EmailTo.Replace(";", ",");
             EmailCC = EmailCC.Replace(";", ",");
             EmailBCC = EmailBCC.Replace(";", ",");
-           // if (EmailFrom.Equals("")) EmailFrom = GetAppSettingsValue("EmailFrom");
+            // if (EmailFrom.Equals("")) EmailFrom = GetAppSettingsValue("EmailFrom");
             string EmailRegularExpression = @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*";
 
             System.Net.Mail.MailMessage mm = new System.Net.Mail.MailMessage();

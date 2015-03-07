@@ -1,7 +1,6 @@
 ﻿using HtmlAgilityPack;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MyCricketSite.App_Start;
 using MyCricketSite.Properties;
 using MyCricketSiteData.Entities;
 using MyCricketSiteData.Services;
@@ -24,23 +23,40 @@ namespace MyCricketSite.Controllers
 
         public ActionResult Index()
         {
-            return null;
-        }
-
-        public ActionResult About()
-        {
-            ViewBag.Message = "Your application description page.";
-
+            HttpCookie cookie = HttpContext.Request.Cookies["User"];
+            if (cookie != null)
+            {
+                string issuer = cookie.Value.Split('|')[0];
+                string key = cookie.Value.Split('|').Length > 1 ? cookie.Value.Split('|')[1] : "";
+                UserService userv = new UserService();
+                User user = userv.FindByProvider(key, issuer);
+                if (user != null)
+                {
+                    SessionUtils.LoggedInUser = user;
+                }
+            }
             return View();
         }
 
-        public ActionResult Contact()
+        public ActionResult SaveUserProfileOnDevice()
         {
-            ViewBag.Message = "Your contact page.";
-
             return View();
         }
 
+        public ActionResult AddUserProfileCookie()
+        {
+            //SessionUtils.LoggedInUser
+            HttpCookie cookie = HttpContext.Request.Cookies["User"];
+            if (cookie == null)
+                cookie = new HttpCookie("User");
+            cookie.Value = SessionUtils.LoggedInUser.Issuer + "|" + SessionUtils.LoggedInUser.ProviderKey;
+            cookie.Expires = DateTime.Now.AddYears(5);
+            HttpContext.Response.Cookies.Add(cookie);
+            return Json(new
+            {
+                HtmlValue = "SUCCESS"
+            }, JsonRequestBehavior.AllowGet);
+        }
         //public ActionResult GetTeamsForTournament(string tournamentID)
         //{
         //    TeamService teamService = new TeamService();
@@ -55,14 +71,16 @@ namespace MyCricketSite.Controllers
         [HttpGet]
         public ActionResult CrawlTeams()
         {
+            string mainUrl = "http://chicagotwenty20.com";
+            string season = "7";
             CookieContainer cookies = new CookieContainer();
-            HttpWebRequest myWebRequest = (HttpWebRequest)WebRequest.Create("http://chicagotwenty20.com/Default.aspx?season=7");
+            HttpWebRequest myWebRequest = (HttpWebRequest)WebRequest.Create(mainUrl + "/Default.aspx?season=" + season);
             myWebRequest.CookieContainer = cookies;
             HttpWebResponse response = (HttpWebResponse)myWebRequest.GetResponse();
 
             WebResponse myWebResponse;
 
-            String URL = "http://chicagotwenty20.com/Teams.aspx";
+            String URL = mainUrl + "/Teams.aspx";
 
             HttpWebRequest myWebRequest1 = (HttpWebRequest)WebRequest.Create(URL);
             myWebRequest1.CookieContainer = cookies;
@@ -81,6 +99,7 @@ namespace MyCricketSite.Controllers
 
             // HtmlNode node = mainNode.SelectSingleNode("//tr");
             Dictionary<string, string> groups = new Dictionary<string, string>();
+            List<Team> TournamentTeamList = new List<Team>();
             foreach (HtmlNode trnode in mainNode.SelectNodes(".//tr"))
             {
                 HtmlNodeCollection node = trnode.SelectNodes(".//td");
@@ -99,9 +118,10 @@ namespace MyCricketSite.Controllers
                 team.Phone = node[4].InnerHtml.ToString();
                 team.HomeGround = node[5].InnerHtml.ToString();
                 tserv.Create(team);
+                TournamentTeamList.Add(team);
                 if (groups.ContainsKey(node[0].InnerText.Trim()))
                 {
-                    groups[node[0].ToString()] = groups[node[0].InnerText.Trim()] + "," + team.Id.ToString();
+                    groups[node[0].InnerText.ToString()] = groups[node[0].InnerText.Trim()] + "," + team.Id.ToString();
                 }
                 else
                     groups.Add(node[0].InnerText.Trim(), team.Id.ToString());
@@ -109,7 +129,7 @@ namespace MyCricketSite.Controllers
 
             Dictionary<string, Dictionary<string, List<string>>> TournamentGroups = new Dictionary<string, Dictionary<string, List<string>>>();
 
-
+            List<Game> GameList = new List<Game>();
             foreach (KeyValuePair<string, string> grp in groups)
             {
                 Dictionary<string, List<string>> gpteams = new Dictionary<string, List<string>>();
@@ -120,7 +140,7 @@ namespace MyCricketSite.Controllers
                     TeamService ts = new TeamService();
                     Team tm = ts.GetById(teamid);
 
-                    String URL1 = "http://chicagotwenty20.com/Team.aspx?team=" + tm.RefId + "&teamName=" + Url.Encode(tm.TeamName).Replace("+", "%20");
+                    String URL1 = mainUrl + "/Team.aspx?team=" + tm.RefId + "&teamName=" + Url.Encode(tm.TeamName).Replace("+", "%20");
 
                     myWebRequest1 = (HttpWebRequest)WebRequest.Create(URL1);
                     myWebRequest1.CookieContainer = cookies;
@@ -134,6 +154,31 @@ namespace MyCricketSite.Controllers
                     string data1 = sreader.ReadToEnd();//reads it to the end
                     HtmlDocument doc1 = new HtmlDocument();
                     doc1.LoadHtml(data1);
+                    string divGamesBody = doc1.DocumentNode.SelectSingleNode("//table[@id='ctl00_main_Teamfixturegrid_ctl00']/tbody").InnerHtml;
+                    HtmlDocument GameDoc = new HtmlDocument();
+                    GameDoc.LoadHtml(divGamesBody);
+
+                    foreach (HtmlNode trGamenode in GameDoc.DocumentNode.SelectNodes(".//tr"))
+                    {
+                        HtmlNodeCollection GameTd = trGamenode.SelectNodes(".//td");
+                        if (GameTd.Count <= 8) continue;
+                        Game gm = new Game();
+                        gm.RefId = GameTd[0].InnerText.ToString();
+                        gm.GroupName = GameTd[1].InnerText.ToString();
+                        DateTime gmDate;
+                        DateTime.TryParse(GameTd[2].InnerText.ToString(), out gmDate);
+                        Dictionary<string, string> dictTeam = new Dictionary<string, string>();
+                        string teams = GameTd[3].InnerText.ToString();
+                        dictTeam.Add("Home", teams.Split(new string[] { " v " }, StringSplitOptions.None)[0]);
+                        dictTeam.Add("Away", teams.Split(new string[] { " v " }, StringSplitOptions.None)[1]);
+                        gm.PlayingTeams = dictTeam;
+                        Dictionary<string, string> dictUmpiringTeam = new Dictionary<string, string>();
+                        dictUmpiringTeam.Add("Umpire1", GameTd[6].InnerText.ToString());
+                        dictUmpiringTeam.Add("Umpire2", GameTd[7].InnerText.ToString());
+                        gm.UmpiringTeams = dictUmpiringTeam;
+                        GameList.Add(gm);
+                    }
+
                     string div = doc1.DocumentNode.SelectSingleNode("//div[@id='ctl00_main_PlayersGrid']").InnerHtml;
                     doc1.LoadHtml(div);
                     string trs_Player = doc1.DocumentNode.SelectSingleNode("//tbody").InnerHtml;
@@ -150,7 +195,7 @@ namespace MyCricketSite.Controllers
                         playerAnc.LoadHtml(node[2].InnerHtml);
                         HtmlNode player_link = playerAnc.DocumentNode.SelectNodes("//a[@href]")[0];
                         string pl_hrf = player_link.Attributes["href"].Value;
-                        myWebRequest1 = (HttpWebRequest)WebRequest.Create("http://chicagotwenty20.com/" + pl_hrf);
+                        myWebRequest1 = (HttpWebRequest)WebRequest.Create(mainUrl + "/" + pl_hrf);
                         myWebRequest1.CookieContainer = cookies;
                         myWebResponse = myWebRequest1.GetResponse();
                         streamResponse = myWebResponse.GetResponseStream();//return the data stream from the internet
@@ -194,6 +239,33 @@ namespace MyCricketSite.Controllers
             tournament.Name = "2014 Chicago Twenty 20";
             tournament.Groups = TournamentGroups;
             tournamentService.Create(tournament);
+
+            GameService gameServ = new GameService();
+            foreach (var game in (GameList.GroupBy(z => z.RefId).Select(group => group.First()).ToList<Game>()))
+            {
+                Game dbGame = new Game();
+                dbGame.TournamentID = tournament.Id.ToString();
+                dbGame.RefId = game.RefId;
+                dbGame.GameDate = game.GameDate;
+                dbGame.GroupName = game.GroupName;
+                Dictionary<string, string> playingTeams = new Dictionary<string, string>();
+                foreach (KeyValuePair<string, string> tm in game.PlayingTeams)
+                {
+                    var team = TournamentTeamList.Where(t => t.TeamName == tm.Value).FirstOrDefault();
+                    playingTeams.Add(tm.Key, team.Id.ToString());
+                }
+                dbGame.PlayingTeams = playingTeams;
+                Dictionary<string, string> umpiringTeams = new Dictionary<string, string>();
+                foreach (KeyValuePair<string, string> tm in game.UmpiringTeams)
+                {
+                    var team = TournamentTeamList.Where(t => t.TeamName == tm.Value).FirstOrDefault();
+                    if (team != null)
+                        umpiringTeams.Add(tm.Key, team.Id.ToString());
+                }
+                dbGame.UmpiringTeams = umpiringTeams;
+                gameServ.Create(dbGame);
+            }
+
 
             return new EmptyResult();
 

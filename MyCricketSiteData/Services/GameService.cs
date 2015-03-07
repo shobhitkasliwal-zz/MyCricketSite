@@ -1,4 +1,5 @@
-﻿using MyCricketSiteData.Entities;
+﻿using MongoDB.Driver.Builders;
+using MyCricketSiteData.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +11,17 @@ namespace MyCricketSiteData.Services
     public class GameService : EntityService<Game>
     {
 
+        public Game GetGameByRefId(string refId)
+        {
 
-         public override void Update(Game entity)
-         {
-         }
+            var entityQuery = Query<Game>.EQ(e => e.RefId, refId);
+            return this.DBConnectionHandler.DBCollection.FindOne(entityQuery);
+
+
+        }
+
+        public override void Update(Game entity)
+        {
+        }
     }
 }

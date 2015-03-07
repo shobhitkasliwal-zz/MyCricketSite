@@ -17,3 +17,21 @@ function getSiteUrl() {
         return applicationName;
     }
 }
+
+function OpenPopup(popupsrc) {
+    return $.magnificPopup.open({
+        items: {
+            src: popupsrc, // can be a HTML string, jQuery object, or CSS selector
+            type: 'inline'
+        },
+        fixedContentPos: false,
+        fixedBgPos: true,
+        overflowY: 'auto',
+        closeBtnInside: true,
+        preloader: false,
+        midClick: true,
+        removalDelay: 300,
+        mainClass: 'my-mfp-zoom-in',
+
+    });
+}
