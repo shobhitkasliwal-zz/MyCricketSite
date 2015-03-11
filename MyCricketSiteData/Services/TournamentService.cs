@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace MyCricketSiteData.Services
 {
-    public class TournamentService:EntityService<Tournament>
+    public class TournamentService : EntityService<Tournament>
     {
-        public IEnumerable<Tournament> getActiveTornaments()
+        public List<Tournament> getAllTournaments()
         {
             var tCursor = this.DBConnectionHandler.DBCollection.FindAllAs<Tournament>()
-                    .SetSortOrder(SortBy<Tournament>.Descending(g => g.StartDate))
-                    .Where(g => g.Status == "Active");
+                    .SetSortOrder(SortBy<Tournament>.Descending(g => g.StartDate)).ToList<Tournament>();
+
 
             return tCursor;
         }

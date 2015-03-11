@@ -23,6 +23,7 @@ namespace MyCricketSite.Controllers
 
         public ActionResult Index()
         {
+
             HttpCookie cookie = HttpContext.Request.Cookies["User"];
             if (cookie != null)
             {
@@ -35,8 +36,49 @@ namespace MyCricketSite.Controllers
                     SessionUtils.LoggedInUser = user;
                 }
             }
+            HttpCookie tournament_cookie = HttpContext.Request.Cookies["DefaultTournament"];
+            if (tournament_cookie != null)
+            {
+                TournamentService tsv = new TournamentService();
+                Tournament tournament = tsv.GetById(tournament_cookie.Value);
+                if (tournament != null)
+                {
+                    SessionUtils.CurrentTournament = tournament;
+                }
+            }
             return View();
         }
+
+
+        public ActionResult GetAllTournamentDisplay()
+        {
+            TournamentService tservice = new TournamentService();
+
+            var serializer = new JavaScriptSerializer();
+            List<Tournament> tournaments = tservice.getAllTournaments();
+
+            string tournament = serializer.Serialize(tournaments.Select(t => new { t.EntityId, t.Name, t.StartDate, t.Status }));
+            return Json(new { Tournaments = tournament }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public ActionResult SelectTournament(string EntityId, bool saveondevice)
+        {
+            TournamentService tservice = new TournamentService();
+            Tournament t = tservice.GetById(EntityId);
+            SessionUtils.CurrentTournament = t;
+            if (saveondevice)
+            {
+                HttpCookie cookie = HttpContext.Request.Cookies["DefaultTournament"];
+                if (cookie == null)
+                    cookie = new HttpCookie("DefaultTournament");
+                cookie.Value = EntityId;
+                cookie.Expires = DateTime.Now.AddYears(5);
+                HttpContext.Response.Cookies.Add(cookie);
+            }
+            return Json(new { Result = "SUCCESS", TournamentName = t.Name });
+        }
+
 
         public ActionResult SaveUserProfileOnDevice()
         {

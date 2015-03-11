@@ -2,4 +2,17 @@
     ViewBag.Title = "Home Page";
 }
 
-@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })
+
+
+
+@section Scripts
+{
+    @if (SessionUtils.CurrentTournament == null)
+    {
+        <script type="text/javascript">
+
+            PopulateTournament();
+
+        </script>
+    }
+}

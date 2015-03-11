@@ -30,6 +30,12 @@ namespace MyCricketSite
             get { return SiteSession.ContainsKey("LoggedInUser") ? (User)SiteSession["LoggedInUser"] : null; }
             set { SiteSession["LoggedInUser"] = value; }
         }
+
+        public static Tournament CurrentTournament
+        {
+            get { return SiteSession.ContainsKey("CurrentTournament") ? (Tournament)SiteSession["CurrentTournament"] : null; }
+            set { SiteSession["CurrentTournament"] = value; }
+        }
     }
 
 

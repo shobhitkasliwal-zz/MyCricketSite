@@ -39,11 +39,11 @@ namespace MyCricketSite.Controllers
 
             Team team = new Team();
             TournamentService tournamentService = new TournamentService();
-            List<Tournament> tournaments = tournamentService.getActiveTornaments().ToList<Tournament>();
+            // List<Tournament> tournaments = tournamentService.getActiveTornaments().ToList<Tournament>();
             List<SelectListItem> obj = new List<SelectListItem>();
 
-            
-            ViewBag.Tournaments = new SelectList(tournaments, "Id","Name"); ;
+
+            //ViewBag.Tournaments = new SelectList(tournaments, "Id", "Name"); ;
             return View(team);
         }
 
@@ -66,11 +66,11 @@ namespace MyCricketSite.Controllers
 
             Game game = new Game();
             TournamentService tournamentService = new TournamentService();
-            List<Tournament> tournaments = tournamentService.getActiveTornaments().ToList<Tournament>();
+           // List<Tournament> tournaments = tournamentService.getActiveTornaments().ToList<Tournament>();
             List<SelectListItem> obj = new List<SelectListItem>();
-            ViewBag.Tournaments = new SelectList(tournaments, "Id", "Name"); ;
+         //   ViewBag.Tournaments = new SelectList(tournaments, "Id", "Name"); ;
 
-          
+
 
             return View(game);
         }

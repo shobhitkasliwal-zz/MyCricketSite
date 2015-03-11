@@ -14,5 +14,7 @@ namespace MyCricketSiteData.Entities
     {
         [BsonId]
         public ObjectId Id { get; set; }
+
+        public string EntityId { get { return Id.ToString(); } }
     }
 }

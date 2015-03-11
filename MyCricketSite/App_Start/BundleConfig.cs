@@ -11,6 +11,7 @@ namespace MyCricketSite
             bundles.Add(new ScriptBundle("~/bundles/SiteScipts").Include(
                         "~/Scripts/jquery-{version}.js",
                          "~/Scripts/jquery.validate*",
+                           "~/Scripts/HomeScripts.js",
                           "~/Scripts/GeneralScipts.js",
                           "~/Scripts/menu.js",
                            "~/Scripts/classie.js",
