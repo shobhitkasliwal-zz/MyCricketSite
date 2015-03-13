@@ -99,6 +99,22 @@ namespace MyCricketSite.Controllers
                 HtmlValue = "SUCCESS"
             }, JsonRequestBehavior.AllowGet);
         }
+
+
+        public ActionResult GetAllGamesForCurrentTournament()
+        {
+            if (SessionUtils.CurrentTournament != null)
+            {
+                GameService gs = new GameService();
+                List<Game> games = gs.GetGamesForTournament(SessionUtils.CurrentTournament.EntityId);
+                var serializer = new JavaScriptSerializer();
+                return Json(new { Games = serializer.Serialize(games) }, JsonRequestBehavior.AllowGet);
+            }
+            return new EmptyResult();
+        }
+        
+        
+        
         //public ActionResult GetTeamsForTournament(string tournamentID)
         //{
         //    TeamService teamService = new TeamService();
@@ -209,6 +225,7 @@ namespace MyCricketSite.Controllers
                         gm.GroupName = GameTd[1].InnerText.ToString();
                         DateTime gmDate;
                         DateTime.TryParse(GameTd[2].InnerText.ToString(), out gmDate);
+                        gm.GameDate = gmDate;
                         Dictionary<string, string> dictTeam = new Dictionary<string, string>();
                         string teams = GameTd[3].InnerText.ToString();
                         dictTeam.Add("Home", teams.Split(new string[] { " v " }, StringSplitOptions.None)[0]);

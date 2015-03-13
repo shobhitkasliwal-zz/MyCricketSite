@@ -8,7 +8,7 @@
     <script type="text/javascript">
 
         $(document).ready(function () {
-            var htmlvalue = "<div style='text-align:center;'><br>br>Do you want the system to remember this user and auto login next time ?<br><br>Note: System will not ask you to login next time until you logout.<br><br><input id='SaveUserProfileOnDeviceSave' type='button' class='btn btn-default' value='Remember' />&nbsp;&nbsp;<input id='SaveUserProfileOnDevice_cancel' type='button' class='btn btn-default' value='Cancel' /></div><br><br>";
+            var htmlvalue = "<div style='text-align:center;'><br><br>Do you want the system to remember this user and auto login next time ?<br><br>Note: System will not ask you to login next time until you logout.<br><br><input id='SaveUserProfileOnDeviceSave' type='button' class='btn btn-default' value='Remember' />&nbsp;&nbsp;<input id='SaveUserProfileOnDevice_cancel' type='button' class='btn btn-default' value='Cancel' /></div><br><br>";
             OpenPopup("<div class='white-popup-block' id='divSaveUserProfileOnDevice'  style='max-width:450px;'><div class='PopupTitle'>Message</div><div class='PopupContent'>" + htmlvalue + "</div></div>");
             $('.mfp-close').remove();
             $.magnificPopup.instance.close = function () { };

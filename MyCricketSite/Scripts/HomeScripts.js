@@ -28,6 +28,8 @@ function PopulateTournament() {
         }
     });
 }
+$('body').on('click', '#divTournamentNamePlaceholder', function () { PopulateTournament(); ShowTournamentPopup(); });
+
 
 var ShowTournamentPopup = function () {
     $('#divSelectTouramentPopupError').html('');
@@ -76,3 +78,39 @@ var SaveCurrentTournament = function (entityid, saveondevice) {
     });
 
 };
+
+
+var PopulateHomeGames = function () {
+    
+    $.ajax({
+        cache: false, async: true, type: "Get", url: getSiteUrl() + "/Home/GetAllGamesForCurrentTournament",
+        success: function (res) {
+
+            if (res != null && res.toString().length > 0) {
+                var games = JSON.parse(res.Games);
+                var html = "";
+                $.each(games, function (k, v) {
+                    //var date = new Date(v.GameDate);
+                    var date = eval(v.GameDate.replace(/\/Date\((\d+)\)\//gi, "new Date($1)"));
+                    var dt = new Date(v.GameDate);
+                    html += "<div class='slide'>" + date.toString() + "</div>"
+                });
+              $('#divGameSlider').html(html);
+                $('.slider1').bxSlider({
+                    slideWidth: 250,
+                    minSlides: 1,
+                    maxSlides:5,
+                    slideMargin: 10,
+                    moveSlides: 1,
+                    pager: false,
+                    pagerType: 'short'
+                });
+               
+            }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            //sendEmail(jqXHR, "BindWalletCreationCancelEvent");
+        }
+    });
+
+}

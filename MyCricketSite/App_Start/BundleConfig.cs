@@ -15,7 +15,9 @@ namespace MyCricketSite
                           "~/Scripts/GeneralScipts.js",
                           "~/Scripts/menu.js",
                            "~/Scripts/classie.js",
-                            "~/Scripts/popup.js"
+                            "~/Scripts/popup.js",
+                            "~/Scripts/jquery.bxslider.js"
+                            
                            ));
 
 
@@ -33,7 +35,10 @@ namespace MyCricketSite
                       "~/Content/bootstrap.css",
                       "~/Content/site.css",
                       "~/Content/menu.css",
-                      "~/Content/popup.css"));
+                      "~/Content/popup.css",
+                      "~/Content/jquery.bxslider.css"
+                      
+                      ));
 
             // Set EnableOptimizations to false for debugging. For more information,
             // visit http://go.microsoft.com/fwlink/?LinkId=301862
