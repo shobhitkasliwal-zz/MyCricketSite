@@ -38,6 +38,7 @@ function OpenPopup(popupsrc) {
 
 
 
+
 Date.prototype.customFormat = function (formatString) {
     /*
      * token:     description:             example:

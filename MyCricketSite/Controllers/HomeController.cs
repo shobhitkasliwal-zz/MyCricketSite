@@ -107,14 +107,15 @@ namespace MyCricketSite.Controllers
             {
                 GameService gs = new GameService();
                 List<Game> games = gs.GetGamesForTournament(SessionUtils.CurrentTournament.EntityId);
+                var dates = games.OrderBy(t => t.GameDate).Select(r => r.GameDate.Date).Distinct().ToList();
                 var serializer = new JavaScriptSerializer();
-                return Json(new { Games = serializer.Serialize(games) }, JsonRequestBehavior.AllowGet);
+                return Json(new { Dates = serializer.Serialize(dates), TournamentStartDate = SessionUtils.CurrentTournament.StartDate }, JsonRequestBehavior.AllowGet);
             }
             return new EmptyResult();
         }
-        
-        
-        
+
+
+
         //public ActionResult GetTeamsForTournament(string tournamentID)
         //{
         //    TeamService teamService = new TeamService();

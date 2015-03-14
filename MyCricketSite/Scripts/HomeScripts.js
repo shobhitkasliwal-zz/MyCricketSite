@@ -87,19 +87,20 @@ var PopulateHomeGames = function () {
         success: function (res) {
 
             if (res != null && res.toString().length > 0) {
-                var games = JSON.parse(res.Games);
+                var games = JSON.parse(res.Dates);
                 var html = "";
+                var TournamentStartDate = eval(res.TournamentStartDate.replace(/\/Date\((\d+)\)\//gi, "new Date($1)"));
                 $.each(games, function (k, v) {
                     //var date = new Date(v.GameDate);
-                    var date = eval(v.GameDate.replace(/\/Date\((\d+)\)\//gi, "new Date($1)"));
-                    var dt = new Date(v.GameDate);
-                    html += "<div class='slide'>" + date.toString() + "</div>"
+                    var date = eval(v.replace(/\/Date\((\d+)\)\//gi, "new Date($1)"));
+                    //var dt = new Date(v.GameDate);
+                    html += "<a class='slide'>" + (weeks_between(date, TournamentStartDate) + 1) +"<br>" + date.customFormat("#DDD# #MMM# #DD# #YYYY#") + "</a>"
                 });
               $('#divGameSlider').html(html);
                 $('.slider1').bxSlider({
-                    slideWidth: 250,
+                    slideWidth: 200,
                     minSlides: 1,
-                    maxSlides:5,
+                    maxSlides:6,
                     slideMargin: 10,
                     moveSlides: 1,
                     pager: false,
@@ -113,4 +114,17 @@ var PopulateHomeGames = function () {
         }
     });
 
+}
+
+
+function weeks_between(date1, date2) {
+    // The number of milliseconds in one week
+    var ONE_WEEK = 1000 * 60 * 60 * 24 * 7;
+    // Convert both dates to milliseconds
+    var date1_ms = date1.getTime();
+    var date2_ms = date2.getTime();
+    // Calculate the difference in milliseconds
+    var difference_ms = Math.abs(date1_ms - date2_ms);
+    // Convert back to weeks and return hole weeks
+    return Math.floor(difference_ms / ONE_WEEK);
 }
