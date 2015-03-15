@@ -46,6 +46,22 @@ namespace MyCricketSite.Controllers
                     SessionUtils.CurrentTournament = tournament;
                 }
             }
+
+
+            if (SessionUtils.LoggedInUser != null && SessionUtils.CurrentTournament != null)
+            {
+                ViewBag.NewtView = "TeamPlayerSelectionPopup";
+                if (SessionUtils.LoggedInUser.TournamentUsers != null)
+                {
+                    TournamentUser tu = (TournamentUser)SessionUtils.LoggedInUser.TournamentUsers.Where<TournamentUser>(t => t.TournamentID == SessionUtils.CurrentTournament.EntityId).FirstOrDefault<TournamentUser>();
+                    if (tu != null && tu.PlayerID.ReplaceNull().Length > 0 && tu.TeamID.ReplaceNull().Length > 0)
+                    {
+                        SessionUtils.LoggedInUser_Current_TournamentUser = tu;
+                        ViewBag.NewtView = null;
+                    }
+                }
+            }
+
             return View();
         }
 
@@ -82,6 +98,7 @@ namespace MyCricketSite.Controllers
 
         public ActionResult SaveUserProfileOnDevice()
         {
+
             return View();
         }
 
@@ -105,16 +122,64 @@ namespace MyCricketSite.Controllers
         {
             if (SessionUtils.CurrentTournament != null)
             {
+                string LoggedinUserTeamID = "";
                 GameService gs = new GameService();
                 List<Game> games = gs.GetGamesForTournament(SessionUtils.CurrentTournament.EntityId);
                 var dates = games.OrderBy(t => t.GameDate).Select(r => r.GameDate.Date).Distinct().ToList();
                 var serializer = new JavaScriptSerializer();
-                return Json(new { Dates = serializer.Serialize(dates), TournamentStartDate = SessionUtils.CurrentTournament.StartDate }, JsonRequestBehavior.AllowGet);
+                string UserTeamid = "";
+                if (SessionUtils.LoggedInUser_Current_TournamentUser != null)
+                {
+                    UserTeamid = SessionUtils.LoggedInUser_Current_TournamentUser.TeamID;
+                }
+                return Json(new { Dates = serializer.Serialize(dates), TournamentStartDate = SessionUtils.CurrentTournament.StartDate, UserTeamid = UserTeamid }, JsonRequestBehavior.AllowGet);
             }
             return new EmptyResult();
         }
 
 
+        public ActionResult GetTeamPlayerSelectionContent()
+        {
+            return View("~/Views/Home/UserTeamPlayerSelection.cshtml");
+        }
+
+
+        public ActionResult GetPlayersForTeam(string TeamID)
+        {
+            var playersJson = "";
+            if (SessionUtils.CurrentTournament != null)
+            {
+                TournamentService ts = new TournamentService();
+                List<Player> players = ts.getTournamentPlayers(SessionUtils.CurrentTournament.EntityId, TeamID);
+                var serializer = new JavaScriptSerializer();
+                playersJson = serializer.Serialize(players);
+            }
+            return Json(new { Players = playersJson }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public ActionResult SavePlayerfoCurrentUser(string teamId, string playerid)
+        {
+            string message = "";
+            if (SessionUtils.LoggedInUser != null && SessionUtils.CurrentTournament != null)
+            {
+                TournamentUser user = new TournamentUser();
+                user.TeamID = teamId;
+                user.PlayerID = playerid;
+                user.TournamentID = SessionUtils.CurrentTournament.EntityId;
+
+                if (SessionUtils.LoggedInUser.TournamentUsers == null)
+                {
+                    SessionUtils.LoggedInUser.TournamentUsers = new List<TournamentUser>();
+                }
+                SessionUtils.LoggedInUser.TournamentUsers.Add(user);
+                UserService userv = new UserService();
+                userv.Update(SessionUtils.LoggedInUser);
+                message = "SUCCESS";
+            }
+
+            return Json(new { Message = message });
+        }
 
         //public ActionResult GetTeamsForTournament(string tournamentID)
         //{
@@ -131,6 +196,7 @@ namespace MyCricketSite.Controllers
         public ActionResult CrawlTeams()
         {
             string mainUrl = "http://chicagotwenty20.com";
+            string refType = "ChicagoTwenty20";
             string season = "7";
             CookieContainer cookies = new CookieContainer();
             HttpWebRequest myWebRequest = (HttpWebRequest)WebRequest.Create(mainUrl + "/Default.aspx?season=" + season);
@@ -172,6 +238,7 @@ namespace MyCricketSite.Controllers
                 string qr = hrf.Split('?').Length > 0 ? hrf.Split('?')[1] : "";
                 qr = qr.Substring(qr.IndexOf("=") + 1, qr.IndexOf("&", qr.IndexOf("=")) - (qr.IndexOf("=") + 1));
                 team.RefId = qr;
+                team.RefType = refType;
                 team.ContactName = node[2].InnerHtml.ToString();
                 team.Email = node[3].InnerHtml.ToString();
                 team.Phone = node[4].InnerHtml.ToString();
@@ -223,6 +290,7 @@ namespace MyCricketSite.Controllers
                         if (GameTd.Count <= 8) continue;
                         Game gm = new Game();
                         gm.RefId = GameTd[0].InnerText.ToString();
+                        gm.RefType = refType;
                         gm.GroupName = GameTd[1].InnerText.ToString();
                         DateTime gmDate;
                         DateTime.TryParse(GameTd[2].InnerText.ToString(), out gmDate);
@@ -251,6 +319,7 @@ namespace MyCricketSite.Controllers
                         HtmlNodeCollection node = trnode.SelectNodes(".//td");
                         Player pl = new Player();
                         pl.RefId = node[0].InnerText;
+                        pl.RefType = refType;
                         HtmlDocument playerAnc = new HtmlDocument();
                         playerAnc.LoadHtml(node[2].InnerHtml);
                         HtmlNode player_link = playerAnc.DocumentNode.SelectNodes("//a[@href]")[0];
@@ -267,6 +336,9 @@ namespace MyCricketSite.Controllers
                         pl_detail.LoadHtml(player_data);
                         pl_detail.LoadHtml(pl_detail.DocumentNode.SelectSingleNode("//table[@id='Table1']").InnerHtml);
                         pl_detail.LoadHtml(pl_detail.DocumentNode.SelectSingleNode("//div[@class='details']/table").InnerHtml);
+                        string imgrl = pl_detail.DocumentNode.SelectSingleNode("//div/img").Attributes["src"].Value;
+
+
                         pl_detail.LoadHtml(pl_detail.DocumentNode.SelectSingleNode("//div[@class='data-container']/ul").InnerHtml);
                         HtmlNodeCollection PlayerLInode = pl_detail.DocumentNode.SelectNodes(".//li");
                         string name = PlayerLInode[0].InnerText.Replace("Name:", "").Trim();
@@ -282,8 +354,32 @@ namespace MyCricketSite.Controllers
                         pl.BowlingStyle = PlayerLInode[4].InnerText.Replace("Bowling Style:", "").Trim();
                         pl.FieldingPosition = PlayerLInode[5].InnerText.Replace("Fielding Position:", "").Trim();
                         pl.DateAdded = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+                        Byte[] lnByte;
+                        HttpWebRequest lxRequest = (HttpWebRequest)WebRequest.Create(mainUrl + @"/" + imgrl.Replace("&amp;", "&"));
+                        lxRequest.CookieContainer = cookies;
+                        // returned values are returned as a stream, then read into a string
+                        String lsResponse = string.Empty;
+                        string imageurl = tm.EntityId + "_" + pl.RefId + "_" + pl.FirstName + ".jpg";
+                        using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponse())
+                        {
+                            using (BinaryReader reader = new BinaryReader(lxResponse.GetResponseStream()))
+                            {
+                                lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
+                                if (lnByte.Length > 0)
+                                {
+                                    using (FileStream lxFS = new FileStream(Server.MapPath(@"~\Content\images\Player\") + imageurl, FileMode.Create))
+                                    {
+                                        lxFS.Write(lnByte, 0, lnByte.Length);
+                                    }
+                                }
+                            }
+                        }
+                        if (lnByte != null && lnByte.Length > 0)
+                            pl.ImageUrl = @"\Content\images\Player\" + imageurl;
                         playerService.Create(pl);
                         PlayerList.Add(pl.Id.ToString());
+
+
                     }
                     gpteams.Add(teamid, PlayerList);
 

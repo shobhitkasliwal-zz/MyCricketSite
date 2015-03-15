@@ -24,6 +24,8 @@ namespace MyCricketSiteData.Services
 
         public override void Update(User entity)
         {
+            this.DBConnectionHandler.DBCollection.Save(entity);
+
         }
     }
 }

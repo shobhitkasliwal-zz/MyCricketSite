@@ -15,6 +15,14 @@ namespace MyCricketSiteData.Entities
         public string Name { get; set; }
         public string emailAddress { get; set; }
         public string ImageUrl { get; set; }
+        public List<TournamentUser> TournamentUsers { get; set; }
 
+    }
+
+    public class TournamentUser
+    {
+        public string TournamentID { get; set; }
+        public string PlayerID { get; set; }
+        public string TeamID { get; set; }
     }
 }

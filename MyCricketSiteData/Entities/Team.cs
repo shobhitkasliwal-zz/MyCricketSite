@@ -24,6 +24,7 @@ namespace MyCricketSiteData.Entities
         public string HomeGround { get; set; }
 
         public string RefId { get; set; }
+        public string RefType { get; set; }
 
     }
 

@@ -1,0 +1,44 @@
+﻿@using MyCricketSiteData.Entities;
+@using MyCricketSiteData.Services;
+
+@{
+    Layout = null;
+    TournamentService ts = new TournamentService();
+    string tournamentId = "";
+    if (SessionUtils.CurrentTournament != null) { tournamentId = SessionUtils.CurrentTournament.EntityId; }
+
+    List<Team> teams = ts.getTournamentTeams(tournamentId);
+
+}
+
+<div style="text-align:center">
+    <div>Please select your team:</div>
+    <div>
+        <div class="dropdown">
+            <button class="btn btn-default dropdown-toggle" type="button" id="ddlUserTeamSelection_Teams" data-toggle="dropdown">
+                <span id="ddlCustomTeamValue">Teams</span>
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu" aria-labelledby="menu1" style="position:relative; float:none;">
+
+                @foreach (var tm in teams)
+                {
+                    <li role="presentation"><a role="menuitem" class="ancddlUserTeamSelection_Teams" teamid="@tm.EntityId" tabindex="-1" onclick="">@tm.TeamName</a></li>
+                }
+            </ul>
+        </div>
+
+
+    </div>
+    <div id="divPlayerSelection">
+
+    </div>
+    <div id="divPlayerConfirmationButtons" style="display:none;">
+        <input type="button" class="btn btn-default" id="divPlayerConfirmationButtonsSubmit" value="Submit" />&nbsp;&nbsp;<input type="button" class="btn btn-default" value="Logout" onclick="window.location.href = getSiteUrl() + '/Account/LogOff'; " />
+    </div>
+</div>
+<script type="text/javascript">
+
+
+
+</script>

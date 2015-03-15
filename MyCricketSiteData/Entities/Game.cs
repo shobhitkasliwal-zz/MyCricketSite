@@ -17,6 +17,6 @@ namespace MyCricketSiteData.Entities
         public Dictionary<string, string> PlayingTeams { get; set; }
         public Dictionary<string, string> UmpiringTeams { get; set; }
         public string RefId { get; set; }
-
+        public string RefType { get; set; }
     }
 }

@@ -2,23 +2,34 @@
     ViewBag.Title = "Home Page";
 }
 
-<div class="slider1" id="divGameSlider">
-    
+<div id="divPageWrapper">
+    <div class="slider1" id="divGameSlider">
 
+
+    </div>
 </div>
 
-
-    @section Scripts
+@section Scripts
 {
-        @if (SessionUtils.CurrentTournament == null)
-        {
-            <script type="text/javascript">
-
-                PopulateTournament();
-
-            </script>
-        }
+    @if (SessionUtils.CurrentTournament == null)
+    {
         <script type="text/javascript">
-            PopulateHomeGames();
+
+            PopulateTournament();
+
         </script>
     }
+    <script type="text/javascript">
+        PopulateHomeGames();
+    </script>
+
+    @if (ViewBag.NewtView != null && ViewBag.NewtView == "TeamPlayerSelectionPopup")
+    {
+        <script type="text/javascript">
+            ShowPlayerTeamSelection();
+
+        </script>
+    }
+
+
+}

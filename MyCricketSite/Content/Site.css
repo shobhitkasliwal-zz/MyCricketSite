@@ -4,15 +4,31 @@
 }
 
 .circularProfileImage {
-float:left;
-}
-.circularProfileImage .text {
-    padding-top:5px;
-    padding-left:10px;
-    float:left;
-}
-.circularProfileImage img {
-   border-radius: 50%;
-    display: block;
+    float: left;
 }
 
+    .circularProfileImage .text {
+        padding-top: 5px;
+        padding-left: 10px;
+        float: left;
+    }
+
+    .circularProfileImage img {
+        border-radius: 50%;
+        display: block;
+    }
+
+
+#divPlayerSelection li {
+    text-align: center;
+    border: solid 2px gray;
+    margin: 5px;
+    padding: 5px;
+    width: 150px;
+    cursor: pointer;
+}
+
+    #divPlayerSelection li.selected {
+        background-color: #ef3125;
+        opacity: 0.7;
+    }

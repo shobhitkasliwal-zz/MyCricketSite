@@ -258,9 +258,11 @@
     <Content Include="Views\Account\_SetPasswordPartial.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Home\SaveUserProfileOnDevice.cshtml" />
+    <Content Include="Views\Home\UserTeamPlayerSelection.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Content\images\Player\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />

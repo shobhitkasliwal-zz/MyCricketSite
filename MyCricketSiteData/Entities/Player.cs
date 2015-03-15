@@ -30,7 +30,12 @@ namespace MyCricketSiteData.Entities
         //[BsonDateTimeOptions(DateOnly = true)]
         public DateTime DateAdded { get; set; }
 
+        public string ImageUrl { get; set; }
+
         public string Role { get; set; }
         public string RefId { get; set; }
+        public string RefType { get; set; }
+
+
     }
 }

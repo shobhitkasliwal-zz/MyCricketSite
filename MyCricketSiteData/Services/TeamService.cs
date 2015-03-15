@@ -7,6 +7,7 @@ using MyCricketSiteData.Entities;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
+using MongoDB.Driver.Linq;
 
 namespace MyCricketSiteData.Services
 {
@@ -25,6 +26,15 @@ namespace MyCricketSiteData.Services
             var entityQuery = Query<Team>.EQ(e => e.TeamName, name);
 
             return this.DBConnectionHandler.DBCollection.FindOne(entityQuery);
+
+
+        }
+
+        public List<Team> GetTeambyIds(List<ObjectId> teamids)
+        {
+
+            return this.DBConnectionHandler.DBCollection.AsQueryable().OfType<Team>().Where(a => teamids.Contains(a.Id)).ToList<Team>();
+
 
 
         }
