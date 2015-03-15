@@ -5,6 +5,10 @@ ehthumbs.db
 # Folder config file
 Desktop.ini
 
+# Folder config file
+*.jpg
+*.png
+
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
