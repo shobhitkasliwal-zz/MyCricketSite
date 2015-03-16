@@ -67,6 +67,7 @@ var SaveCurrentTournament = function (entityid, saveondevice) {
             if (res != null && res.toString().length > 0) {
                 if (res.Result === "SUCCESS") {
                     $('#spanCurrentTournament').html(res.TournamentName);
+                    window.location.href = getSiteUrl();
                 }
 
             }
@@ -80,6 +81,7 @@ var SaveCurrentTournament = function (entityid, saveondevice) {
 
 
 var PopulateHomeGames = function () {
+
 
     $.ajax({
         cache: false, async: true, type: "Get", url: getSiteUrl() + "/Home/GetAllGamesForCurrentTournament",
@@ -155,61 +157,30 @@ function weeks_between(date1, date2) {
 }
 
 
-
-$('body').on('click', '.ancddlUserTeamSelection_Teams', function (event) {
-
-    $('#ddlCustomTeamValue').html($(this).html());
-    $('#ddlCustomTeamValue').attr('teamid', $(this).attr('teamid'));
-
-
+var ShowAvailabilityPage = function () {
     $.ajax({
-        cache: false, async: true, type: "Get", url: getSiteUrl() + "/Home/GetPlayersForTeam",
-        data: { TeamID: $(this).attr("teamid") },
+        cache: false, async: true, type: "Get", url: getSiteUrl() + "/Home/PlayerAvailability",
         success: function (res) {
-            if (res != null && res != undefined && res.Players.length > 0) {
-                var players = JSON.parse(res.Players);
-                var plHtml = '';
-                $.each(players, function (k, v) {
-                    plHtml = plHtml + '<li EntityId="' + v.EntityId + '" ><div>' + v.FirstName + ' ' + v.LastName + '</div><div><img class="lazy" data-original="' + (v.ImageUrl != null && v.ImageUrl.length > 0 ? v.ImageUrl : "\\Content\\images\\Player\\Nophoto.png") + '" width="100" height="100" /></div></li>';
+            $('#perspective .container').click();
+            $('#divPageWrapper').fadeOut('slow', function () {
+                $('#divPageWrapper').html(res);
+                $('#divAvailabilityTabs').tabulous({
+                    effect: 'scale'
+                });
+                $('#divPageWrapper').fadeIn('slow', function () {
                 });
 
-                $('#divPlayerSelection').html('<br><div>Please select your name from the list below:</div><ul class="list-inline">' + plHtml + '</ul>')
-
-                $("img.lazy").lazyload({
-                    effect: "fadeIn"
-                });
-                $('body').on('click', '#divPlayerSelection li', function (event) {
-                    $('#divPlayerSelection li').removeClass('selected');
-                    $(this).addClass('selected');
-                    $('#divPlayerConfirmationButtons').show();
-                });
-                $('body').on('click', '#divPlayerConfirmationButtonsSubmit', function (event) {
-                    var TeamId = $('#ddlCustomTeamValue').attr('teamid');
-                    var playerid = $('#divPlayerSelection li.selected').attr('EntityId');
-                    $.ajax({
-                        cache: false, async: true, type: "Post", url: getSiteUrl() + "/Home/SavePlayerfoCurrentUser",
-                        data: { teamId: TeamId, playerid: playerid },
-                        success: function (res) {
-                            if (res != null && res != undefined && res.Message.length > 0) {
-                                window.location.href = getSiteUrl();
-                            }
-                        }
-                            ,
-                        error: function (jqXHR, textStatus, errorThrown) {
-                            //sendEmail(jqXHR, "BindWalletCreationCancelEvent");
-                        }
-                    });
-
-                });
+            })
 
 
-            }
-        }
-
-
-        ,
+        },
         error: function (jqXHR, textStatus, errorThrown) {
             //sendEmail(jqXHR, "BindWalletCreationCancelEvent");
         }
     });
-});
+
+}
+
+var Menu_Home_Click = function () {
+
+}

@@ -93,6 +93,7 @@ namespace MyCricketSite.Controllers
                 HttpContext.Response.Cookies.Add(cookie);
             }
             return Json(new { Result = "SUCCESS", TournamentName = t.Name });
+
         }
 
 
@@ -117,7 +118,7 @@ namespace MyCricketSite.Controllers
             }, JsonRequestBehavior.AllowGet);
         }
 
-
+        //
         public ActionResult GetAllGamesForCurrentTournament()
         {
             if (SessionUtils.CurrentTournament != null)
@@ -179,6 +180,11 @@ namespace MyCricketSite.Controllers
             }
 
             return Json(new { Message = message });
+        }
+
+        public ActionResult PlayerAvailability()
+        {
+            return View();
         }
 
         //public ActionResult GetTeamsForTournament(string tournamentID)
@@ -390,7 +396,7 @@ namespace MyCricketSite.Controllers
             }
             TournamentService tournamentService = new TournamentService();
             Tournament tournament = new Tournament();
-            tournament.StartDate = new DateTime(2014, 05, 17);
+            tournament.StartDate = new DateTime(2014, 04, 25);
             tournament.Status = "Closed";
             tournament.Name = "2014 Chicago Twenty 20";
             tournament.Groups = TournamentGroups;
@@ -402,6 +408,7 @@ namespace MyCricketSite.Controllers
                 Game dbGame = new Game();
                 dbGame.TournamentID = tournament.Id.ToString();
                 dbGame.RefId = game.RefId;
+                dbGame.RefType = game.RefType;
                 dbGame.GameDate = game.GameDate;
                 dbGame.GroupName = game.GroupName;
                 Dictionary<string, string> playingTeams = new Dictionary<string, string>();
